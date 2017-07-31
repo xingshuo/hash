@@ -2,7 +2,7 @@
 
 static inline slot *
 mainposition(map *m , KEY_TYPE key){
-    int hash = key & (m->size-1);
+    int64_t hash = key & (m->size-1);
     return &m->slot_list[hash];
 }
 
@@ -37,7 +37,7 @@ hash_insert(map* m, KEY_TYPE key, void* value){
             temp->key = key;
             temp->value = value;
             temp->next = s->next;
-            s->next = (int)(temp - m->slot_list);
+            s->next = (int64_t)(temp - m->slot_list);
             return;
         }
     }
@@ -48,11 +48,11 @@ hash_insert(map* m, KEY_TYPE key, void* value){
 static void
 rehash(map * m) {
     slot * old_slot = m->slot_list;
-    int old_size = m->size;
+    int64_t old_size = m->size;
     m->size = 2 * old_size;
     m->lastfree = m->size - 1;
     m->slot_list = malloc(m->size * sizeof(slot));
-    int i;
+    int64_t i;
     for (i=0;i<m->size;i++) {
         slot * s = &m->slot_list[i];
         s->key = INVALID_KEY;
@@ -141,7 +141,7 @@ hash_delete(map* m, KEY_TYPE key){
 }
 
 static int
-ceillog2(unsigned int x) { //fetch from lua source code
+ceillog2(int64_t x) { //fetch from lua source code
   static const unsigned char log_2[256] = {
     0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
     6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
@@ -159,15 +159,15 @@ ceillog2(unsigned int x) { //fetch from lua source code
 }
 
 map*
-new_hashmap(int pre_size){
+new_hashmap(int64_t pre_size){
     assert(pre_size > 1);
     int lsize = ceillog2(pre_size);
-    int size = 1<<lsize;
+    int64_t size = 1<<lsize;
     map * m = malloc(sizeof(*m));
     m->size = size;
     m->lastfree = size - 1;
     m->slot_list = malloc(m->size * sizeof(slot));
-    int i;
+    int64_t i;
     for (i=0;i<m->size;i++) {
         slot * s = &m->slot_list[i];
         s->key = INVALID_KEY;
@@ -185,14 +185,14 @@ delete_hashmap(map* m){
 
 void
 trace_hashmap(map* m){
-    printf("\033[0;34mtotal size:%d\033[0m\n", m->size);
-    printf("\033[0;34mlastfree:%d\033[0m\n",m->lastfree);
+    printf("\033[0;34mtotal size:%ld\033[0m\n", m->size);
+    printf("\033[0;34mlastfree:%ld\033[0m\n",m->lastfree);
     printf("\033[0;34mslot list:\033[0m\n");
-    int i;
+    int64_t i;
     for(i=0; i<m->size; i++) {
         if (m->slot_list[i].key == INVALID_KEY)
-            printf("\033[0;34mpos:%d key:INVALID value:%p next:%d\033[0m\n", i, m->slot_list[i].value, m->slot_list[i].next);
+            printf("\033[0;34mpos:%ld key:INVALID value:%p next:%ld\033[0m\n", i, m->slot_list[i].value, m->slot_list[i].next);
         else
-            printf("\033[0;34mpos:%d key:%lu value:%p next:%d\033[0m\n", i, m->slot_list[i].key, m->slot_list[i].value, m->slot_list[i].next);
+            printf("\033[0;34mpos:%ld key:%lu value:%p next:%ld\033[0m\n", i, m->slot_list[i].key, m->slot_list[i].value, m->slot_list[i].next);
     }
 }
