@@ -14,18 +14,18 @@
 typedef struct {
     KEY_TYPE key;
     void* value;
-    int next;
+    int64_t next;
 } slot;
 
 typedef struct {
-    int size;
-    int lastfree;
+    int64_t size;
+    int64_t lastfree;
     slot* slot_list;
 } map;
 
 typedef map HASH_MAP;
 
-map* new_hashmap(int);
+map* new_hashmap(int64_t);
 void delete_hashmap(map*);
 void trace_hashmap(map*);
 void* hash_add(map*, KEY_TYPE, void*);
