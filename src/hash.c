@@ -185,14 +185,43 @@ delete_hashmap(map* m){
 
 void
 trace_hashmap(map* m){
-    printf("\033[0;34mtotal size:%d\033[0m\n", m->size);
-    printf("\033[0;34mlastfree:%d\033[0m\n",m->lastfree);
-    printf("\033[0;34mslot list:\033[0m\n");
+    printf("\033[0;33mtotal size:%d\033[0m\n", m->size);
+    printf("\033[0;33mlastfree:%d\033[0m\n",m->lastfree);
+    printf("\033[0;33mslot list:\033[0m\n");
+    int *temp = malloc(m->size * sizeof(int));
+    int length = 0;
     int i;
     for(i=0; i<m->size; i++) {
-        if (m->slot_list[i].key == INVALID_KEY)
-            printf("\033[0;34mpos:%d key:INVALID value:%p next:%d\033[0m\n", i, m->slot_list[i].value, m->slot_list[i].next);
-        else
-            printf("\033[0;34mpos:%d key:%lu value:%p next:%d\033[0m\n", i, m->slot_list[i].key, m->slot_list[i].value, m->slot_list[i].next);
+        slot * s = &m->slot_list[i];
+        if (s->key == INVALID_KEY) {
+            printf("\033[0;34mpos:%d key:INVALID value:%p next:%d\033[0m\n", i, s->value, s->next);
+        }
+        else {
+            printf("\033[0;33mpos:%d key:%lu value:%p next:%d\033[0m\n", i, s->key, s->value, s->next);
+            slot* last = mainposition(m, s->key);
+            if (s == last) {
+                int len = 0;
+                for (;;) {
+                    len++;
+                    if (s->next < 0) {
+                        break;
+                    }
+                    s=&m->slot_list[s->next];
+                }
+                temp[length++] = len;
+            }
+        }
     }
+    uint64_t sum = 0;
+    int n = 0;
+    int j;
+    for (i=0;i<length;i++) {
+        n += temp[i];
+        for (j=1; j<=temp[i]; j++) {
+            sum += j;
+        }
+    }
+    free(temp);
+    double avg = (n == 0) ? 0 : (double)sum/n;
+    printf("\033[0;33mavg search length:%lf node cnt:%d\033[0m\n",avg,n);
 }
